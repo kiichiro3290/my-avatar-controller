@@ -7,12 +7,17 @@ import { landmarkAtom } from "@/atoms/landmarkAtom";
 import { useEffect, useRef, useState } from "react";
 
 import * as THREE from "three";
-import { calcNeckRotation } from "@/utils/clacRotation";
+import { applyLeftArmRotation, applyNeckRotation } from "@/utils/calcRotation";
 import { mixamoRigNames } from "@/const/mixamorigNames";
-import { Rigs } from "@/types";
+import { InitialRigRotation, Rigs } from "@/types";
 import { FBXLoader } from "three/examples/jsm/Addons.js";
 
-function AvatarModel({ setBones }: { setBones: (bones: Rigs) => void }) {
+type AvatarModelProps = {
+  setBones: (bones: Rigs) => void;
+  setInitialRigRotations: (rotations: InitialRigRotation) => void;
+};
+
+function AvatarModel({ setBones, setInitialRigRotations }: AvatarModelProps) {
   const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
@@ -22,28 +27,60 @@ function AvatarModel({ setBones }: { setBones: (bones: Rigs) => void }) {
       fbx.position.set(0, 0, 0);
 
       const boneMap: Rigs = {} as Rigs;
+      const initialRotations: InitialRigRotation = {} as InitialRigRotation;
       for (const rigName of mixamoRigNames) {
         const bone = fbx.getObjectByName(rigName);
-        if (bone) boneMap[rigName] = bone;
+        if (bone) {
+          boneMap[rigName] = bone;
+          initialRotations[rigName] = bone.quaternion.clone();
+        }
       }
 
       setBones(boneMap);
+      setInitialRigRotations(initialRotations);
       if (groupRef.current) {
         groupRef.current.add(fbx);
       }
     });
-  }, [setBones]);
+  }, [setBones, setInitialRigRotations]);
 
   return <group ref={groupRef} />;
 }
 
-function AvatarUpdater({ bones }: { bones: Rigs }) {
+type AvatarUpdaterProps = {
+  bones: Rigs;
+  initialRigRotations: InitialRigRotation;
+};
+
+function AvatarUpdater({ bones, initialRigRotations }: AvatarUpdaterProps) {
   const poseData = useAtomValue(landmarkAtom);
 
   useFrame(() => {
     if (!poseData || !bones["mixamorigNeck"]) return;
-    const neckRot = calcNeckRotation(poseData);
-    bones["mixamorigNeck"].quaternion.copy(neckRot);
+
+    applyNeckRotation(poseData, bones["mixamorigNeck"]);
+    applyLeftArmRotation(
+      poseData,
+      {
+        upperArm: bones["mixamorigLeftArm"],
+        forearm: bones["mixamorigLeftForeArm"],
+      },
+      {
+        upperArm: initialRigRotations["mixamorigLeftArm"],
+        forearm: initialRigRotations["mixamorigLeftForeArm"],
+      }
+    );
+    applyLeftArmRotation(
+      poseData,
+      {
+        upperArm: bones["mixamorigRightArm"],
+        forearm: bones["mixamorigRightForeArm"],
+      },
+      {
+        upperArm: initialRigRotations["mixamorigRightArm"],
+        forearm: initialRigRotations["mixamorigRightForeArm"],
+      }
+    );
   });
 
   return null;
@@ -51,6 +88,8 @@ function AvatarUpdater({ bones }: { bones: Rigs }) {
 
 export default function AvatarRendererR3F() {
   const [bones, setBones] = useState<Rigs>({} as Rigs);
+  const [initialRigRotation, setInitialRigRotation] =
+    useState<InitialRigRotation>({} as InitialRigRotation);
 
   return (
     <div className="w-full h-full">
@@ -58,8 +97,11 @@ export default function AvatarRendererR3F() {
         <ambientLight intensity={0.5} />
         <directionalLight intensity={1} position={[0, 10, 10]} />
         <OrbitControls target={[0, 2, 0]} />
-        <AvatarModel setBones={setBones} />
-        <AvatarUpdater bones={bones} />
+        <AvatarModel
+          setBones={setBones}
+          setInitialRigRotations={setInitialRigRotation}
+        />
+        <AvatarUpdater bones={bones} initialRigRotations={initialRigRotation} />
       </Canvas>
     </div>
   );

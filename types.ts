@@ -15,6 +15,10 @@ export type Rigs = {
     [key in MixamoRigNamesType]: THREE.Object3D
 }
 
+export type InitialRigRotation = {
+    [key in MixamoRigNamesType]: THREE.Quaternion
+}
+
 export type RandmarkNamesType = typeof poseLandmarkNames[number]
 
 export type LandMarks = {
