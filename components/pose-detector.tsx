@@ -1,6 +1,7 @@
 "use client";
 import { landmarkAtom } from "@/atoms/landmarkAtom";
 import { poseLandmarkNames } from "@/const/landmarks";
+import { useMediaPipe } from "@/hooks/meidapipe";
 import { LandMarks } from "@/types";
 import { useAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 export default function PoseLandmarkerDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [poseLandmarker, setPoseLandmarker] = useState<any>(null);
+
   const [webcamRunning, setWebcamRunning] = useState<boolean>(false);
   const videoWidth = 480;
   const videoHeight = 360;
@@ -17,29 +18,7 @@ export default function PoseLandmarkerDemo() {
   const webcamRunningRef = useRef(false);
   const [landmarkData, setLandmarkData] = useAtom(landmarkAtom);
 
-  useEffect(() => {
-    const createPoseLandmarker = async () => {
-      const vision = await (
-        await import("@mediapipe/tasks-vision")
-      ).FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-      );
-      const { PoseLandmarker } = await import("@mediapipe/tasks-vision");
-
-      const landmarker = await PoseLandmarker.createFromOptions(vision, {
-        baseOptions: {
-          modelAssetPath:
-            "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
-          delegate: "GPU",
-        },
-        runningMode: "IMAGE",
-        numPoses: 2,
-      });
-      setPoseLandmarker(landmarker);
-    };
-
-    createPoseLandmarker();
-  }, []);
+  const poseLandmarker = useMediaPipe();
 
   const toggleWebcam = async () => {
     if (!poseLandmarker || !canvasRef.current) return;
