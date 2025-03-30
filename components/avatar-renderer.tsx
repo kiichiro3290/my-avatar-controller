@@ -1,16 +1,20 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useAtomValue } from "jotai";
 import { landmarkAtom } from "@/atoms/landmarkAtom";
 import { useEffect, useRef, useState } from "react";
 
 import * as THREE from "three";
-import { applyLeftArmRotation, applyNeckRotation } from "@/utils/calcRotation";
+import {
+  applyLeftArmRotation,
+  applyNeckRotation,
+  applyRightArmRotation,
+} from "@/utils/calcRotation";
 import { mixamoRigNames } from "@/const/mixamorigNames";
 import { InitialRigRotation, Rigs } from "@/types";
-import { FBXLoader } from "three/examples/jsm/Addons.js";
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 
 type AvatarModelProps = {
   setBones: (bones: Rigs) => void;
@@ -21,9 +25,10 @@ function AvatarModel({ setBones, setInitialRigRotations }: AvatarModelProps) {
   const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
-    const loader = new FBXLoader();
-    loader.load("/models/avatar.fbx", (fbx) => {
-      fbx.scale.set(0.01, 0.01, 0.01);
+    const loader = new GLTFLoader();
+    loader.load("/models/avatar.glb", (gltf) => {
+      const fbx = gltf.scene;
+      fbx.scale.set(2, 2, 2);
       fbx.position.set(0, 0, 0);
 
       const boneMap: Rigs = {} as Rigs;
@@ -32,6 +37,9 @@ function AvatarModel({ setBones, setInitialRigRotations }: AvatarModelProps) {
         const bone = fbx.getObjectByName(rigName);
         if (bone) {
           boneMap[rigName] = bone;
+          if (rigName === "mixamorigRightArm") {
+            bone.rotation.z = -Math.PI / 4;
+          }
           initialRotations[rigName] = bone.quaternion.clone();
         }
       }
@@ -70,7 +78,7 @@ function AvatarUpdater({ bones, initialRigRotations }: AvatarUpdaterProps) {
         forearm: initialRigRotations["mixamorigLeftForeArm"],
       }
     );
-    applyLeftArmRotation(
+    applyRightArmRotation(
       poseData,
       {
         upperArm: bones["mixamorigRightArm"],
@@ -93,10 +101,10 @@ export default function AvatarRendererR3F() {
 
   return (
     <div className="w-full h-full">
-      <Canvas camera={{ position: [0, 2, 4], fov: 30 }}>
+      <Canvas camera={{ position: [0, 2, 7], fov: 30 }}>
         <ambientLight intensity={0.5} />
-        <directionalLight intensity={1} position={[0, 10, 10]} />
-        <OrbitControls target={[0, 3, 0]} />
+        <directionalLight intensity={2} position={[0, 10, 10]} />
+        <OrbitControls target={[0, 1, 0]} />
         <AvatarModel
           setBones={setBones}
           setInitialRigRotations={setInitialRigRotation}
