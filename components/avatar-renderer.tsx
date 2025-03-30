@@ -1,8 +1,9 @@
 "use client";
 
 import { landmarkAtom } from "@/atoms/landmarkAtom";
+import { mixamoRigNames } from "@/const/mixamorigNames";
 import { useAtomValue } from "jotai";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { FBXLoader } from "three/examples/jsm/Addons.js";
@@ -16,6 +17,8 @@ export default function AvatarRenderer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const poseData = useAtomValue(landmarkAtom);
+
+  const [bones, setBones] = useState<THREE.Object3D[]>([]);
 
   useEffect(() => {
     const loader = new FBXLoader();
@@ -36,6 +39,13 @@ export default function AvatarRenderer() {
 
         // fbxオブジェクトを参照するためにrefやstateに保存したいならここで保存する
         sceneRef.current?.add(fbx);
+
+        for (const rigName of mixamoRigNames) {
+          const bone = fbx.getObjectByName(rigName);
+          if (bone) {
+            bones.push(bone);
+          }
+        }
       },
       undefined,
       (error) => {
@@ -125,7 +135,54 @@ export default function AvatarRenderer() {
 
   // Update avatar pose based on pose data
   useEffect(() => {
-    if (!poseData || !sceneRef.current) return;
+    if (!poseData || !sceneRef.current || bones.length <= 0) return;
+
+    const mpToWorld = (p: { x: number; y: number; z: number }) => {
+      return new THREE.Vector3(
+        (p.x - 0.5) * 2, // 中心補正 + スケーリング
+        -(p.y - 0.5) * 2, // 上下反転
+        -p.z * 2 // Zは奥行き
+      );
+    };
+
+    const getNormalizedDirection = (from: THREE.Vector3, to: THREE.Vector3) => {
+      return new THREE.Vector3().subVectors(to, from).normalize();
+    };
+
+    // ランドマーク（MediaPipe） → Three.jsにマッピング
+    console.log("poseData", poseData);
+    const leftShoulder = mpToWorld(
+      poseData.filter((l) => l.name === "left_shoulder")[0]
+    );
+    const rightShoulder = mpToWorld(
+      poseData.filter((l) => l.name === "right_shoulder")[0]
+    );
+    const nose = mpToWorld(poseData.filter((l) => l.name === "nose")[0]);
+
+    // 肩の中心（≒首の付け根）
+    const neckBase = new THREE.Vector3()
+      .addVectors(leftShoulder, rightShoulder)
+      .multiplyScalar(0.5);
+
+    // 顔の向き（首の回転方向）＝首の付け根 → 鼻
+    const faceDirection = getNormalizedDirection(neckBase, nose);
+
+    // 初期の首の向き（例：Z方向を向いていたと仮定）
+    const defaultDirection = new THREE.Vector3(0, 0, 1);
+
+    // クォータニオンで回転を計算
+    const neckRotation = new THREE.Quaternion().setFromUnitVectors(
+      defaultDirection,
+      faceDirection
+    );
+
+    // 首ボーンに適用（ボーン名はあなたのモデルに合わせて）
+    const neckBone = bones.find(
+      (bone) => bone.name === "mixamorigNeck" // MixamoのFBXの場合
+    );
+    if (neckBone) {
+      neckBone.quaternion.copy(neckRotation);
+    }
   }, [poseData]);
 
   return (
