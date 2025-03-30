@@ -1,17 +1,19 @@
-import { LandMark } from "@/types";
+import { LandMarks } from "@/types";
 import { getNormalizedDirection, mpToWorld } from "./mediaPipe2Three";
 
 import * as THREE from "three";
 
-export const calcNeckRotation = (poseData: LandMark[]) => {
+export const calcNeckRotation = (poseData: LandMarks) => {
   // ランドマーク（MediaPipe） → Three.jsにマッピング
   const leftShoulder = mpToWorld(
-    poseData.filter((l) => l.name === "left_shoulder")[0]
+    poseData['left_shoulder']
   );
   const rightShoulder = mpToWorld(
-    poseData.filter((l) => l.name === "right_shoulder")[0]
+    poseData['right_shoulder']
   );
-  const nose = mpToWorld(poseData.filter((l) => l.name === "nose")[0]);
+    const nose = mpToWorld(
+        poseData['nose']
+    );
 
   // 肩の中心（≒首の付け根）
   const neckBase = new THREE.Vector3()
