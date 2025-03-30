@@ -99,7 +99,6 @@ export default function PoseLandmarkerDemo() {
               canvasRef.current!.width,
               canvasRef.current!.height
             );
-            // console.log(result.landmarks.entries());
             for (const landmark of result.landmarks) {
               drawingUtils.drawLandmarks(landmark, {
                 radius: (data) =>
@@ -116,7 +115,6 @@ export default function PoseLandmarkerDemo() {
               return;
             }
             for (const [id, landmark] of result.landmarks[0]?.entries()) {
-              // console.log(id, landmark);
               newLandmarkData[poseLandmarkNames[id]] = {
                 x: landmark.x,
                 y: landmark.y,
