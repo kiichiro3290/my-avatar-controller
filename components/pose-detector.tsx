@@ -41,10 +41,14 @@ export default function PoseLandmarkerDemo() {
     createPoseLandmarker();
   }, []);
 
-  const enableWebcam = async () => {
-    if (!poseLandmarker) return;
+  const toggleWebcam = async () => {
+    if (!poseLandmarker || !canvasRef.current) return;
 
     setWebcamRunning((prev) => !prev);
+
+    // Clear the canvas
+    const ctx = canvasRef.current?.getContext("2d");
+    ctx?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
     if (!webcamRunningRef.current) {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -82,7 +86,7 @@ export default function PoseLandmarkerDemo() {
     }
 
     const loop = async () => {
-      if (!webcamRunningRef) return;
+      if (!webcamRunningRef.current) return;
 
       if (videoRef.current!.currentTime !== lastVideoTimeRef.current) {
         lastVideoTimeRef.current = videoRef.current!.currentTime;
@@ -137,7 +141,10 @@ export default function PoseLandmarkerDemo() {
 
   return (
     <div>
-      <button onClick={enableWebcam}>
+      <button
+        className="rounded-md p-2 text-white bg-blue-500 hover:bg-blue-600 transition duration-200"
+        onClick={toggleWebcam}
+      >
         {webcamRunning ? "DISABLE PREDICTIONS" : "ENABLE PREDICTIONS"}
       </button>
       <div style={{ position: "relative" }}>
