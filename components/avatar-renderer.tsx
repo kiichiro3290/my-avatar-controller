@@ -93,10 +93,10 @@ export default function AvatarRendererR3F() {
 
   return (
     <div className="w-full h-full">
-      <Canvas camera={{ position: [0, 4, 2], fov: 45 }}>
+      <Canvas camera={{ position: [0, 2, 4], fov: 30 }}>
         <ambientLight intensity={0.5} />
         <directionalLight intensity={1} position={[0, 10, 10]} />
-        <OrbitControls target={[0, 2, 0]} />
+        <OrbitControls target={[0, 3, 0]} />
         <AvatarModel
           setBones={setBones}
           setInitialRigRotations={setInitialRigRotation}
