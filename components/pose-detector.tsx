@@ -92,11 +92,13 @@ export default function PoseLandmarkerDemo() {
                 poseLandmarker.POSE_CONNECTIONS
               );
             }
-            // Set the landmark data to the atom
+            canvasCtx.restore();
+
             const newLandmarkData: LandMarks = { ...landmarkData };
             if (result.landmarks.length === 0) {
               return;
             }
+            // NOTE: Only one person
             for (const [id, landmark] of result.landmarks[0]?.entries()) {
               newLandmarkData[poseLandmarkNames[id]] = {
                 x: landmark.x,
@@ -106,8 +108,6 @@ export default function PoseLandmarkerDemo() {
               };
             }
             setLandmarkData(newLandmarkData);
-            // Draw the landmarks on the canvas
-            canvasCtx.restore();
           }
         );
       }
