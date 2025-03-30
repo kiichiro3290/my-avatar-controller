@@ -50,11 +50,7 @@ export default function Home() {
         </div>
         <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center justify-center">
           <h2 className="text-xl font-semibold mb-4">3D Avatar</h2>
-          <div
-            className="relative w-full h-[400px]"
-            id="avatar-container"
-          ></div>
-          <div className="mt-4 text-sm text-gray-600">
+          <div className="mt-4 w-full h-[400px] text-sm text-gray-600">
             <AvatarRenderer />
           </div>
         </div>

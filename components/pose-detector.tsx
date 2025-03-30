@@ -15,7 +15,7 @@ export default function PoseLandmarkerDemo() {
   const lastVideoTimeRef = useRef(-1);
   const runningModeRef = useRef<"IMAGE" | "VIDEO">("IMAGE");
   const webcamRunningRef = useRef(false);
-  const [landmarkData, setLandmarkData] = useAtom(landmarkAtom);
+  const [, setLandmarkData] = useAtom(landmarkAtom);
 
   useEffect(() => {
     const createPoseLandmarker = async () => {
