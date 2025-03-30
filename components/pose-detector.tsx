@@ -1,6 +1,6 @@
 "use client";
 import { landmarkAtom } from "@/atoms/landmarkAtom";
-import { initialLandmarkData, poseLandmarkNames } from "@/const/landmarks";
+import { poseLandmarkNames } from "@/const/landmarks";
 import { LandMarks } from "@/types";
 import { useAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";

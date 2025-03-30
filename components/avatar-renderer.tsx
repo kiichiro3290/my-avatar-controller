@@ -86,7 +86,7 @@ export default function AvatarRenderer() {
       0.1,
       1000
     );
-    camera.position.set(0, 1.5, 3);
+    camera.position.set(0, 4, 2);
     cameraRef.current = camera;
 
     // Create renderer
@@ -101,7 +101,7 @@ export default function AvatarRenderer() {
 
     // Add orbit controls
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 1, 0);
+    controls.target.set(0, 2, 0);
     controls.update();
 
     // Animation loop
