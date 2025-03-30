@@ -1,5 +1,9 @@
 "use client";
-import { use, useEffect, useRef, useState } from "react";
+import { landmarkAtom } from "@/atoms/landmarkAtom";
+import { poseLandmarkNames } from "@/const/landmarks";
+import { LandMark } from "@/types";
+import { useAtom } from "jotai";
+import { useEffect, useRef, useState } from "react";
 
 export default function PoseLandmarkerDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -11,6 +15,7 @@ export default function PoseLandmarkerDemo() {
   const lastVideoTimeRef = useRef(-1);
   const runningModeRef = useRef<"IMAGE" | "VIDEO">("IMAGE");
   const webcamRunningRef = useRef(false);
+  const [landmarkData, setLandmarkData] = useAtom(landmarkAtom);
 
   useEffect(() => {
     const createPoseLandmarker = async () => {
@@ -94,6 +99,7 @@ export default function PoseLandmarkerDemo() {
               canvasRef.current!.width,
               canvasRef.current!.height
             );
+            // console.log(result.landmarks.entries());
             for (const landmark of result.landmarks) {
               drawingUtils.drawLandmarks(landmark, {
                 radius: (data) =>
@@ -104,6 +110,23 @@ export default function PoseLandmarkerDemo() {
                 poseLandmarker.POSE_CONNECTIONS
               );
             }
+            // Set the landmark data to the atom
+            const landmarkData: LandMark[] = [];
+            if (result.landmarks.length === 0) {
+              return;
+            }
+            for (const [id, landmark] of result.landmarks[0]?.entries()) {
+              // console.log(id, landmark);
+              landmarkData.push({
+                x: landmark.x,
+                y: landmark.y,
+                z: landmark.z,
+                visibility: landmark.visibility,
+                name: poseLandmarkNames[id].name,
+              });
+            }
+            setLandmarkData(landmarkData);
+            // Draw the landmarks on the canvas
             canvasCtx.restore();
           }
         );

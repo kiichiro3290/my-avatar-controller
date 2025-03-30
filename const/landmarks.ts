@@ -1,23 +1,4 @@
-## Getting Started
-
-```shell
-pnpm install
-pnpm dev
-```
-
-
-## 姿勢ランドマーク検出
-
-参考(MediaPipe)
-
-https://developers.google.com/mediapipe/solutions/vision/pose_landmarker/web_js
-
-検出ポイント
-https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker/index?hl=ja#pose_landmarker_model
-
-各検出点のChatGPTによる命名
-```
-const poseLandmarks = [
+export const poseLandmarkNames = [
   { name: "nose" },
   { name: "left_eye_inner" },
   { name: "left_eye" },
@@ -52,4 +33,3 @@ const poseLandmarks = [
   { name: "left_foot_index" },
   { name: "right_foot_index" }
 ];
-```

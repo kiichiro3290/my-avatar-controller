@@ -1,28 +1,20 @@
 "use client";
 
+import { landmarkAtom } from "@/atoms/landmarkAtom";
+import { useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { FBXLoader } from "three/examples/jsm/Addons.js";
 
-interface PoseLandmark {
-  x: number;
-  y: number;
-  z?: number;
-  score?: number;
-  name?: string;
-}
-
-interface AvatarRendererProps {
-  poseData: PoseLandmark[];
-}
-
-export default function AvatarRenderer({ poseData }: AvatarRendererProps) {
+export default function AvatarRenderer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const frameIdRef = useRef<number>(0);
+
+  const poseData = useAtomValue(landmarkAtom);
 
   useEffect(() => {
     const loader = new FBXLoader();
@@ -236,7 +228,7 @@ export default function AvatarRenderer({ poseData }: AvatarRendererProps) {
     // Update joint positions
     for (const [name, joint] of Object.entries(joints)) {
       const keypoint = keypointMap.get(name);
-      if (keypoint && keypoint.score && keypoint.score > 0.3) {
+      if (keypoint && keypoint.visibility && keypoint.visibility > 0.3) {
         // Convert from pixel coordinates to 3D space
         // This is a simplified mapping - you'd need to adjust based on your scene scale
         const x = (keypoint.x / 640 - 0.5) * 2;
@@ -273,10 +265,10 @@ export default function AvatarRenderer({ poseData }: AvatarRendererProps) {
       if (
         fromKeypoint &&
         toKeypoint &&
-        fromKeypoint.score &&
-        toKeypoint.score &&
-        fromKeypoint.score > 0.3 &&
-        toKeypoint.score > 0.3
+        fromKeypoint.visibility &&
+        toKeypoint.visibility &&
+        fromKeypoint.visibility > 0.3 &&
+        toKeypoint.visibility > 0.3
       ) {
         // Convert from pixel coordinates to 3D space
         const fromX = (fromKeypoint.x / 640 - 0.5) * 2;

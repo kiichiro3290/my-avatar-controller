@@ -55,17 +55,7 @@ export default function Home() {
             id="avatar-container"
           ></div>
           <div className="mt-4 text-sm text-gray-600">
-            <AvatarRenderer
-              poseData={[
-                {
-                  x: 0,
-                  y: 0,
-                  z: 0,
-                  score: 1,
-                  name: "hoge",
-                },
-              ]}
-            />
+            <AvatarRenderer />
           </div>
         </div>
       </div>
