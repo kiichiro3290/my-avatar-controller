@@ -2,6 +2,7 @@
 
 import { landmarkAtom } from "@/atoms/landmarkAtom";
 import { mixamoRigNames } from "@/const/mixamorigNames";
+import { mpToWorld, getNormalizedDirection } from "@/utils/mediaPipe2Three";
 import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
@@ -137,20 +138,7 @@ export default function AvatarRenderer() {
   useEffect(() => {
     if (!poseData || !sceneRef.current || bones.length <= 0) return;
 
-    const mpToWorld = (p: { x: number; y: number; z: number }) => {
-      return new THREE.Vector3(
-        (p.x - 0.5) * 2, // 中心補正 + スケーリング
-        -(p.y - 0.5) * 2, // 上下反転
-        -p.z * 2 // Zは奥行き
-      );
-    };
-
-    const getNormalizedDirection = (from: THREE.Vector3, to: THREE.Vector3) => {
-      return new THREE.Vector3().subVectors(to, from).normalize();
-    };
-
     // ランドマーク（MediaPipe） → Three.jsにマッピング
-    console.log("poseData", poseData);
     const leftShoulder = mpToWorld(
       poseData.filter((l) => l.name === "left_shoulder")[0]
     );
