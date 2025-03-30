@@ -1,10 +1,9 @@
 "use client";
 
 import { landmarkAtom } from "@/atoms/landmarkAtom";
-import { mixamoRigNames } from "@/const/mixamorigNames";
-import { LandMark } from "@/types";
+import { initialRigData, mixamoRigNames } from "@/const/mixamorigNames";
+import { Rigs } from "@/types";
 import { calcNeckRotation } from "@/utils/clacRotation";
-import { mpToWorld, getNormalizedDirection } from "@/utils/mediaPipe2Three";
 import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
@@ -21,7 +20,8 @@ export default function AvatarRenderer() {
 
   const poseData = useAtomValue(landmarkAtom);
 
-  const [bones, setBones] = useState<THREE.Object3D[]>([]);
+  const [bones, setBones] = useState<Rigs>(initialRigData);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     const loader = new FBXLoader();
@@ -46,9 +46,11 @@ export default function AvatarRenderer() {
         for (const rigName of mixamoRigNames) {
           const bone = fbx.getObjectByName(rigName);
           if (bone) {
-            bones.push(bone);
+            bones[rigName] = bone;
           }
         }
+        setBones(bones);
+        setIsLoaded(true);
       },
       undefined,
       (error) => {
@@ -138,13 +140,11 @@ export default function AvatarRenderer() {
 
   // Update avatar pose based on pose data
   useEffect(() => {
-    if (!poseData || !sceneRef.current || bones.length <= 0) return;
+    if (!poseData || !sceneRef.current || !isLoaded) return;
 
     // 首ボーンに適用（ボーン名はあなたのモデルに合わせて）
     const neckRotation = calcNeckRotation(poseData);
-    const neckBone = bones.find(
-      (bone) => bone.name === "mixamorigNeck" // MixamoのFBXの場合
-    );
+    const neckBone = bones["mixamorigNeck"];
     if (neckBone) {
       neckBone.quaternion.copy(neckRotation);
     }
